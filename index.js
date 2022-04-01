@@ -8,7 +8,7 @@ const app=express()
 const port= process.env.PORT || 5000
 
 var http = require('http');
-var server = http.Server(app);
+var server = http.createServer(app);
 
 app.use(bodyParser.urlencoded({extended:false}))
 
