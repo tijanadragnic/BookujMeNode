@@ -1,28 +1,34 @@
 //*some code*//
-
+require("dotenv").config();
+const pool=require("./config/database")
 const express=require('express');
 const bodyParser=require('body-parser');
-const mysql=require('mysql');
+
+const userRouter = require("./api/users/user-router");
+
 
 const app=express()
+app.use(express.json());
+app.use("/", userRouter);
+
+
+const bcrypt=require('bcrypt');
+const { checkToken } = require("./auth/token-validation");
+
 const port= process.env.PORT || 5000
 
-var http = require('http');
-var server = http.createServer(app);
+
+
+
+
+
 
 app.use(bodyParser.urlencoded({extended:false}))
 
 app.use(bodyParser.json());
 
-//mysql
-const pool=mysql.createPool({
-    connectionLimit:10,
-    host: 'localhost',
-    user: 'TijanaDragnic',
-    password:'Pk0(h.E3XSS_*pRf',
-    database:'bookujme'
 
-})
+
 //get all the books
 
 app.get('/books',(req,res)=>{
@@ -114,7 +120,7 @@ app.put('',(req,res)=>{
         
     })
 })
-//authetication for login
+//get users all
 app.get('/users',(req,res)=>{
     pool.getConnection((err,connection)=>{
         if(err) throw err
@@ -131,18 +137,75 @@ app.get('/users',(req,res)=>{
         
     })
 })
-//post users
+
+//get users byid
+app.get('/users/:id',(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+        connection.query(`SELECT * from users WHERE id=?`,[req.params.id],(err,rows)=>{
+            connection.release()//return the connection to pool
+
+            if(!err){
+                res.send(rows)
+            }else{
+                console.log(err)
+            }
+        })
+
+        
+    })
+})
+
+//create users
 app.post('/users',(req,res)=>{
     pool.getConnection((err,connection)=>{
         if(err) throw err
 
 
         const params=req.body
-        connection.query(`INSERT INTO  users SET?`,params,(err,rows)=>{
+        connection.query(`INSERT INTO users SET?`,params,(err,rows)=>{
             connection.release()//return the connection to pool
 
             if(!err){
-                res.send(`User with the record name:${params.first_name} has been added`)
+                res.send(`Book with the record name:${params.first_name} has been added`)
+            }else{
+                console.log(err)
+            }
+        })
+
+        
+    })
+})
+
+
+//update users
+app.put('',checkToken,(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+
+        const { id,first_name,last_name,email,city,password }=req.body
+        connection.query(`UPDATE  users SET first_name=? WHERE id=?`,[first_name,id],(err,rows)=>{
+            connection.release()//return the connection to pool
+
+            if(!err){
+                res.send(`User with the record name:${first_name} has been updated`)
+            }else{
+                console.log("You need to have access token")
+            }
+        })
+
+        
+    })
+})
+//delete use
+app.delete('/users/:id',checkToken,(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+        connection.query(`DELETE from users WHERE id=?`,[req.params.id],(err,rows)=>{
+            connection.release()//return the connection to pool
+
+            if(!err){
+                res.send(`User with the record ID:${[req.params.id]} has been removed`)
             }else{
                 console.log(err)
             }
