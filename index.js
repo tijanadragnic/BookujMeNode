@@ -114,5 +114,45 @@ app.put('',(req,res)=>{
         
     })
 })
+//authetication for login
+app.get('/users',(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+        connection.query(`SELECT * from users`,(err,rows)=>{
+            connection.release()//return the connection to pool
+
+            if(!err){
+                res.send(rows)
+            }else{
+                console.log(err)
+            }
+        })
+
+        
+    })
+})
+//post users
+app.post('/users',(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+
+
+        const params=req.body
+        connection.query(`INSERT INTO  users SET?`,params,(err,rows)=>{
+            connection.release()//return the connection to pool
+
+            if(!err){
+                res.send(`User with the record name:${params.first_name} has been added`)
+            }else{
+                console.log(err)
+            }
+        })
+
+        
+    })
+})
+
+
+
 //listen on port
 app.listen(port,()=> console.log("listen on port 5000"))
