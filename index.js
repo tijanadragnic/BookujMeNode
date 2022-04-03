@@ -139,7 +139,7 @@ app.get('/users',(req,res)=>{
 })
 
 //get users byid
-app.get('/users/:id',(req,res)=>{
+app.get('',(req,res)=>{
     pool.getConnection((err,connection)=>{
         if(err) throw err
         connection.query(`SELECT * from users WHERE id=?`,[req.params.id],(err,rows)=>{
@@ -179,7 +179,7 @@ app.post('/users',(req,res)=>{
 
 
 //update users
-app.put('',checkToken,(req,res)=>{
+app.put('/users',checkToken,(req,res)=>{
     pool.getConnection((err,connection)=>{
         if(err) throw err
 
@@ -214,8 +214,23 @@ app.delete('/users/:id',checkToken,(req,res)=>{
         
     })
 })
+//get all cityes
+app.get('/cities',(req,res)=>{
+    pool.getConnection((err,connection)=>{
+        if(err) throw err
+        connection.query(`SELECT * from cities`,(err,rows)=>{
+            connection.release()//return the connection to pool
 
+            if(!err){
+                res.send(rows)
+            }else{
+                console.log(err)
+            }
+        })
 
+        
+    })
+})
 
 //listen on port
 app.listen(port,()=> console.log("listen on port 5000"))
